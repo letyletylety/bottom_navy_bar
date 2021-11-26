@@ -9,7 +9,7 @@ import 'package:flutter/widgets.dart';
 /// Update [selectedIndex] to change the selected item.
 /// [selectedIndex] is required and must not be null.
 class BottomNavyBar extends StatelessWidget {
-  BottomNavyBar({
+  const BottomNavyBar({
     Key? key,
     this.selectedIndex = 0,
     this.showElevation = true,
@@ -22,6 +22,8 @@ class BottomNavyBar extends StatelessWidget {
     required this.items,
     required this.onItemSelected,
     this.curve = Curves.linear,
+    this.noBackgroundMode = false,
+    this.childMainAxisAlignment = MainAxisAlignment.start,
   })  : assert(items.length >= 2 && items.length <= 5),
         super(key: key);
 
@@ -62,6 +64,11 @@ class BottomNavyBar extends StatelessWidget {
   /// Used to configure the animation curve. Defaults to [Curves.linear].
   final Curve curve;
 
+  final bool noBackgroundMode;
+
+  /// the main axis alignment foreach item
+  final MainAxisAlignment childMainAxisAlignment;
+
   @override
   Widget build(BuildContext context) {
     final bgColor = backgroundColor ?? Theme.of(context).bottomAppBarColor;
@@ -85,20 +92,114 @@ class BottomNavyBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: mainAxisAlignment,
             children: items.map((item) {
-              var index = items.indexOf(item);
+              int index = items.indexOf(item);
               return GestureDetector(
                 onTap: () => onItemSelected(index),
-                child: _ItemWidget(
-                  item: item,
-                  iconSize: iconSize,
-                  isSelected: index == selectedIndex,
-                  backgroundColor: bgColor,
-                  itemCornerRadius: itemCornerRadius,
-                  animationDuration: animationDuration,
-                  curve: curve,
-                ),
+                child: noBackgroundMode
+                    ? _NoBgItemWidget(
+                        item: item,
+                        iconSize: iconSize,
+                        isSelected: index == selectedIndex,
+                        backgroundColor: bgColor,
+                        itemCornerRadius: itemCornerRadius,
+                        animationDuration: animationDuration,
+                        curve: curve,
+                        mainAxisAlignment: childMainAxisAlignment,
+                      )
+                    : _ItemWidget(
+                        item: item,
+                        iconSize: iconSize,
+                        isSelected: index == selectedIndex,
+                        backgroundColor: bgColor,
+                        itemCornerRadius: itemCornerRadius,
+                        animationDuration: animationDuration,
+                        curve: curve,
+                        mainAxisAlignment: childMainAxisAlignment,
+                      ),
               );
             }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// no background
+class _NoBgItemWidget extends StatelessWidget {
+  final double iconSize;
+  final bool isSelected;
+  final BottomNavyBarItem item;
+  final Color backgroundColor;
+  final double itemCornerRadius;
+  final Duration animationDuration;
+  final Curve curve;
+  final MainAxisAlignment mainAxisAlignment;
+
+  const _NoBgItemWidget({
+    Key? key,
+    required this.item,
+    required this.isSelected,
+    required this.backgroundColor,
+    required this.animationDuration,
+    required this.itemCornerRadius,
+    required this.iconSize,
+    this.curve = Curves.linear,
+    required this.mainAxisAlignment,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      selected: isSelected,
+      child: AnimatedContainer(
+        width: isSelected ? 130 : 50,
+        height: double.maxFinite,
+        duration: animationDuration,
+        curve: curve,
+        decoration: BoxDecoration(
+          // color:
+          //     isSelected ? item.activeColor.withOpacity(0.2) : backgroundColor,
+          borderRadius: BorderRadius.circular(itemCornerRadius),
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const NeverScrollableScrollPhysics(),
+          child: Container(
+            width: isSelected ? 130 : 50,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: mainAxisAlignment,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                IconTheme(
+                  data: IconThemeData(
+                    size: iconSize,
+                    color: isSelected
+                        ? item.activeColor.withOpacity(1)
+                        : item.inactiveColor ?? item.activeColor,
+                  ),
+                  child: item.icon,
+                ),
+                if (isSelected)
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: DefaultTextStyle.merge(
+                        style: TextStyle(
+                          color: item.activeColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        textAlign: item.textAlign,
+                        child: item.title,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -115,6 +216,8 @@ class _ItemWidget extends StatelessWidget {
   final Duration animationDuration;
   final Curve curve;
 
+  final MainAxisAlignment mainAxisAlignment;
+
   const _ItemWidget({
     Key? key,
     required this.item,
@@ -124,6 +227,7 @@ class _ItemWidget extends StatelessWidget {
     required this.itemCornerRadius,
     required this.iconSize,
     this.curve = Curves.linear,
+    required this.mainAxisAlignment,
   }) : super(key: key);
 
   @override
@@ -143,13 +247,13 @@ class _ItemWidget extends StatelessWidget {
         ),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           child: Container(
             width: isSelected ? 130 : 50,
-            padding: EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
               mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: mainAxisAlignment,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 IconTheme(
@@ -157,16 +261,14 @@ class _ItemWidget extends StatelessWidget {
                     size: iconSize,
                     color: isSelected
                         ? item.activeColor.withOpacity(1)
-                        : item.inactiveColor == null
-                            ? item.activeColor
-                            : item.inactiveColor,
+                        : item.inactiveColor ?? item.activeColor,
                   ),
                   child: item.icon,
                 ),
                 if (isSelected)
                   Expanded(
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: DefaultTextStyle.merge(
                         style: TextStyle(
                           color: item.activeColor,
