@@ -95,111 +95,19 @@ class BottomNavyBar extends StatelessWidget {
               int index = items.indexOf(item);
               return GestureDetector(
                 onTap: () => onItemSelected(index),
-                child: noBackgroundMode
-                    ? _NoBgItemWidget(
-                        item: item,
-                        iconSize: iconSize,
-                        isSelected: index == selectedIndex,
-                        backgroundColor: bgColor,
-                        itemCornerRadius: itemCornerRadius,
-                        animationDuration: animationDuration,
-                        curve: curve,
-                        mainAxisAlignment: childMainAxisAlignment,
-                      )
-                    : _ItemWidget(
-                        item: item,
-                        iconSize: iconSize,
-                        isSelected: index == selectedIndex,
-                        backgroundColor: bgColor,
-                        itemCornerRadius: itemCornerRadius,
-                        animationDuration: animationDuration,
-                        curve: curve,
-                        mainAxisAlignment: childMainAxisAlignment,
-                      ),
+                child: _ItemWidget(
+                  item: item,
+                  iconSize: iconSize,
+                  isSelected: index == selectedIndex,
+                  backgroundColor: bgColor,
+                  itemCornerRadius: itemCornerRadius,
+                  animationDuration: animationDuration,
+                  curve: curve,
+                  mainAxisAlignment: childMainAxisAlignment,
+                  noBackgroundMode: noBackgroundMode,
+                ),
               );
             }).toList(),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// no background
-class _NoBgItemWidget extends StatelessWidget {
-  final double iconSize;
-  final bool isSelected;
-  final BottomNavyBarItem item;
-  final Color backgroundColor;
-  final double itemCornerRadius;
-  final Duration animationDuration;
-  final Curve curve;
-  final MainAxisAlignment mainAxisAlignment;
-
-  const _NoBgItemWidget({
-    Key? key,
-    required this.item,
-    required this.isSelected,
-    required this.backgroundColor,
-    required this.animationDuration,
-    required this.itemCornerRadius,
-    required this.iconSize,
-    this.curve = Curves.linear,
-    required this.mainAxisAlignment,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      container: true,
-      selected: isSelected,
-      child: AnimatedContainer(
-        width: isSelected ? 130 : 50,
-        height: double.maxFinite,
-        duration: animationDuration,
-        curve: curve,
-        decoration: BoxDecoration(
-          // color:
-          //     isSelected ? item.activeColor.withOpacity(0.2) : backgroundColor,
-          borderRadius: BorderRadius.circular(itemCornerRadius),
-        ),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const NeverScrollableScrollPhysics(),
-          child: Container(
-            width: isSelected ? 130 : 50,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: mainAxisAlignment,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                IconTheme(
-                  data: IconThemeData(
-                    size: iconSize,
-                    color: isSelected
-                        ? item.activeColor.withOpacity(1)
-                        : item.inactiveColor ?? item.activeColor,
-                  ),
-                  child: item.icon,
-                ),
-                if (isSelected)
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: DefaultTextStyle.merge(
-                        style: TextStyle(
-                          color: item.activeColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        textAlign: item.textAlign,
-                        child: item.title,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
           ),
         ),
       ),
@@ -217,6 +125,7 @@ class _ItemWidget extends StatelessWidget {
   final Curve curve;
 
   final MainAxisAlignment mainAxisAlignment;
+  final bool noBackgroundMode;
 
   const _ItemWidget({
     Key? key,
@@ -228,6 +137,7 @@ class _ItemWidget extends StatelessWidget {
     required this.iconSize,
     this.curve = Curves.linear,
     required this.mainAxisAlignment,
+    required this.noBackgroundMode,
   }) : super(key: key);
 
   @override
@@ -241,8 +151,11 @@ class _ItemWidget extends StatelessWidget {
         duration: animationDuration,
         curve: curve,
         decoration: BoxDecoration(
-          color:
-              isSelected ? item.activeColor.withOpacity(0.2) : backgroundColor,
+          color: noBackgroundMode
+              ? (isSelected
+                  ? item.activeColor.withOpacity(0.2)
+                  : backgroundColor)
+              : backgroundColor,
           borderRadius: BorderRadius.circular(itemCornerRadius),
         ),
         child: SingleChildScrollView(
@@ -266,7 +179,7 @@ class _ItemWidget extends StatelessWidget {
                   child: item.icon,
                 ),
                 if (isSelected)
-                  Expanded(
+                  Flexible(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: DefaultTextStyle.merge(
