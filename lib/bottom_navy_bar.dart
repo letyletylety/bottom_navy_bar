@@ -3,6 +3,8 @@ library bottom_navy_bar;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+part 'bottom_navy_bar_expanded.dart';
+
 /// A beautiful and animated bottom navigation that paints a rounded shape
 /// around its [items] to provide a wonderful look.
 ///
@@ -22,8 +24,10 @@ class BottomNavyBar extends StatelessWidget {
     required this.items,
     required this.onItemSelected,
     this.curve = Curves.linear,
-    this.noBackgroundMode = false,
+    this.backgroundMode = false,
     this.childMainAxisAlignment = MainAxisAlignment.start,
+    // this.screenWidth = 0.0,
+    // this.itemWidth = 50.0,
   })  : assert(items.length >= 2 && items.length <= 5),
         super(key: key);
 
@@ -64,11 +68,16 @@ class BottomNavyBar extends StatelessWidget {
   /// Used to configure the animation curve. Defaults to [Curves.linear].
   final Curve curve;
 
-  final bool noBackgroundMode;
+  final bool backgroundMode;
 
   /// the main axis alignment foreach item
   final MainAxisAlignment childMainAxisAlignment;
 
+  // /// the width of full screen.
+  // final double screenWidth;
+  //
+  // /// the width of item.
+  // final double itemWidth;
   @override
   Widget build(BuildContext context) {
     final bgColor = backgroundColor ?? Theme.of(context).bottomAppBarColor;
@@ -104,7 +113,7 @@ class BottomNavyBar extends StatelessWidget {
                   animationDuration: animationDuration,
                   curve: curve,
                   mainAxisAlignment: childMainAxisAlignment,
-                  noBackgroundMode: noBackgroundMode,
+                  backgroundMode: backgroundMode,
                 ),
               );
             }).toList(),
@@ -125,7 +134,7 @@ class _ItemWidget extends StatelessWidget {
   final Curve curve;
 
   final MainAxisAlignment mainAxisAlignment;
-  final bool noBackgroundMode;
+  final bool backgroundMode;
 
   const _ItemWidget({
     Key? key,
@@ -137,7 +146,7 @@ class _ItemWidget extends StatelessWidget {
     required this.iconSize,
     this.curve = Curves.linear,
     required this.mainAxisAlignment,
-    required this.noBackgroundMode,
+    required this.backgroundMode,
   }) : super(key: key);
 
   @override
@@ -151,7 +160,7 @@ class _ItemWidget extends StatelessWidget {
         duration: animationDuration,
         curve: curve,
         decoration: BoxDecoration(
-          color: noBackgroundMode
+          color: backgroundMode
               ? (isSelected
                   ? item.activeColor.withOpacity(0.2)
                   : backgroundColor)
@@ -167,7 +176,6 @@ class _ItemWidget extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: mainAxisAlignment,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 IconTheme(
                   data: IconThemeData(
